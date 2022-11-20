@@ -1,0 +1,155 @@
+---
+title: "UGR Muestreo Tema 4"
+author: "franmarq@gmail.com"
+date: '2022-11-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars}
+library(sampling) 
+data(MU284)
+head(MU284)
+
+# comprobamos las variables 
+names(MU284) 
+attach(MU284) 
+# tama~no de la poblaci´on 
+N=length(P75) 
+# tama~no de la muestra 
+n=100 
+# selecci´on de los municipios que van a pertenecer a la muestra 
+s=sample(N,n) 
+# definici´on de los valores muestrales 
+# para la variable de inter´es y las variables auxiliares 
+y = RMT85[s] 
+x1 = P75[s] 
+x2 = P85[s] 
+
+# totales de las variables auxiliares 
+tx1=sum(P75) 
+tx2=sum(P85) 
+totales=c(tx1,tx2) 
+# vector de probabilidades de inclusi´on para un m.a.s 
+pik=rep(n/N,n) 
+# c´alculo del estimador de Horvitz-Thompson para el total poblacional 
+t_ypi=HTestimator(y,pik)
+
+
+#-----------------------------------------------------------------------------------------------------
+
+
+# definici´on del modelo de superpoblaci´on y = beta0 + beta1 x1 + beta2 x2 
+modelo=y~x1+x2 
+
+# matriz de probabilidades de inclusi´on para un m.a.s 
+pikl=matrix(n*(n-1)/(N*(N-1)),n,n) 
+
+# c´alculo del estimador de regresi´on 0 
+# considerando el modelo lineal y = beta0 + beta1 x1 + beta2 x2 
+r=regest(formula=modelo, weights= 1/pik, Tx=totales, pikl, n) 
+
+# estimador de regresi´on 
+t_ygreg=r$regest 
+# coeficientes 
+coef=r$coefficients 
+# estimador de los pesos de calibraci´on 
+Xs=cbind(x1,x2) g1=calib(Xs,d=1/pik,totales,method="linear") 
+# chequeo de la calibraci´on 
+checkcalibration(Xs,d=1/pik,totales,g1) 
+# estimador de calibraci´on 
+
+c=calibev(y,Xs,totales,pikl,d=1/pik,g1,with=TRUE,EPS=1e-6) 
+t_yc=c$calest 
+t_ypi 
+t_ygreg 
+t_yc 
+
+#total de la variable de inter´es desconocido en la pr´actica 
+sum(RMT85)
+
+```
+
+
+
+
+
+/**************************/
+
+
+
+```{r data}
+data<-read.table("granjas.txt", header = TRUE)
+y<-data$y
+x<-data$x
+```
+
+
+
+```{r calculos}
+# tama~no de la muestra 
+n=27 
+N=120
+media=31.2
+
+# vector de probabilidades de inclusi´on para un m.a.s 
+pik=rep(n/N,n) 
+
+# matriz de probabilidades de inclusi´on para un m.a.s 
+pikl=matrix(n*(n-1)/(N*(N-1)),n,n) 
+
+# c´alculo del estimador de Horvitz-Thompson para el total poblacional 
+t_ypi=HTestimator(y,pik)
+
+```
+
+
+
+```{r modelo}
+# definici´on del modelo de superpoblación y = beta*xi + v(xi)uii 
+v=x**0.5
+modelo=y~x+v
+modelo
+```
+
+
+```{r estreg}
+tx=sum(x)
+tv=sum(v)
+total=c(tx,tv)
+total
+#totales=c(tx1,tx2) 
+
+# c´alculo del estimador de regresi´on 0 
+# considerando el modelo lineal y = beta0 + beta1 x1 + beta2 x2 
+r=regest(formula=modelo, weights= 1/pik, Tx=total, pikl, n) 
+
+# estimador de regresi´on 
+t_ygreg=r$regest 
+
+# coeficientes 
+coef=r$coefficients 
+
+
+# estimador de los pesos de calibraci´on 
+Xs=cbind(x,v) 
+g1=calib(Xs,d=1/pik,total,method="linear") 
+
+# chequeo de la calibraci´on 
+checkcalibration(Xs,d=1/pik,total,g1) 
+
+# estimador de calibraci´on 
+c=calibev(y,Xs,total,pikl,d=1/pik,g1,with=TRUE,EPS=1e-6) 
+t_yc=c$calest 
+t_ypi 
+t_ygreg 
+t_yc 
+
+#total de la variable de inter´es desconocido en la pr´actica 
+#sum(RMT85)
+
+```
