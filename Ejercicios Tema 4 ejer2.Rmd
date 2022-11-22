@@ -1,0 +1,78 @@
+---
+title: "UGR Muestreo Tema 4 Ejercicio2"
+author: "franmarq@gmail.com"
+date: '2022-11-20'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+En el fichero grafico.doc se muestra el gráfico correspondiente a la población denominada Labor donde las variables consideradas son y, ingresos semanales, y x, horas semanales.
+
+1.- En función a dicha gráfica, ¿qué modelo de superpoblación supondrías para la población? ¿Qué se podría comentar acerca de la componente de error del modelo?
+
+2.- Selecciona una muestra de tamaño 20 mediante muestreo aleatorio simple de la población (fichero labor.txt) y estima en base a ella la media de los ingresos semanales por trabajador mediante el estimador de razón y mediante el estimador de regresión. 
+
+Note que la columna 9 corresponde a la variable x (horas semanales) y la columna 10 a la variable y (ingresos semanales). 
+
+El ejercicio se puede realizar utilizando el paquete sampling, pero se valorará que el alumno desarrolle código propio en R.
+
+```{r data}
+data42<-read.table("Labor.txt", header = TRUE)
+head(data42)
+str(data42)
+names(data42) 
+attach(data42) 
+N42=length(X1)
+N42
+```
+```{r sampling}
+library(sampling) 
+# obtenemos la muestra
+n42=20
+# selecci´on de los municipios que van a pertenecer a la muestra 
+s42=sample(N42,n42) 
+# definici´on de los valores muestrales 
+# para la variable de inter´es y las variables auxiliares 
+y42 = X160[s42] 
+x42 = X40[s42] 
+```
+
+
+```{r calcmedia}
+# totales de las variables auxiliares 
+tx142=sum(X40) 
+#tx2=sum(P85) 
+total42=c(tx142) 
+# vector de probabilidades de inclusi´on para un m.a.s 
+pik42=rep(n42/N42,n42) 
+# c´alculo del estimador de Horvitz-Thompson para el total poblacional 
+t_42=HTestimator(y42,pik42)
+
+#obtencion del promedio poblacional mediante el estimador de razon
+med_42=t_42/N42
+med_42
+```
+
+
+```{r calregres}
+
+# definici´on del modelo de superpoblaci´on y = beta0 + beta1 x1 + beta2 x2 
+modelo42=y42~x42 
+
+# matriz de probabilidades de inclusi´on para un m.a.s 
+pikl42=matrix(n42*(n42-1)/(N42*(N42-1)),n42,n42) 
+
+# c´alculo del estimador de regresi´on 0 
+# considerando el modelo lineal y = beta0 + beta1 x1 + beta2 x2 
+r42=regest(formula=modelo42, weights= 1/pik42, Tx=total42, pikl42, n42) 
+
+# estimador de regresi´on 
+t_ygreg42=r42$regest 
+med_ygreg42= t_ygreg42/N42
+med_ygreg42
+
+
+```

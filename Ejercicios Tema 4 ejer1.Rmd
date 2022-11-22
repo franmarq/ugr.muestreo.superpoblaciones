@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r data}
 data<-read.table("granjas.txt", header = TRUE)
+head(data)
+attach(data)
 y<-data$y
 x<-data$x
 ```
@@ -20,6 +22,7 @@ x<-data$x
 
 
 ```{r calculos}
+library(sampling)
 # tama~no de la muestra 
 n=27 
 N=120
@@ -51,35 +54,44 @@ tx=sum(x)
 tv=sum(v)
 total=c(tx,tv)
 total
+
 #totales=c(tx1,tx2) 
 
 # c´alculo del estimador de regresi´on 0 
-# considerando el modelo lineal y = beta0 + beta1 x1 + beta2 x2 
 r=regest(formula=modelo, weights= 1/pik, Tx=total, pikl, n) 
 
 # estimador de regresi´on 
 t_ygreg=r$regest 
-t_ygreg
+med_ygreg=t_ygreg/N
+med_ygreg
 
 # coeficientes 
 coef=r$coefficients 
+coef
+```
+
+```{r plotsampling}
+rx<-data.frame(r$x,r$y)
+rx
+plot(rx$x,rx$y)
+
+data$estim<-r$y
+
+plot(data$x,data$estim)
+```
+
+```{r plot2}
+rx2<-data(r$x,r$y)
+rx
+plot(rx$x,rx$y)
+
+```
 
 
-# estimador de los pesos de calibraci´on 
-Xs=cbind(x,v) 
-g1=calib(Xs,d=1/pik,total,method="linear") 
 
-# chequeo de la calibraci´on 
-checkcalibration(Xs,d=1/pik,total,g1) 
+```{r estimacion}
+yestim<- 160286.099+7862.303*31.2-(65839.265/31.2)
+yestim
 
-# estimador de calibraci´on 
-c=calibev(y,Xs,total,pikl,d=1/pik,g1,with=TRUE,EPS=1e-6) 
-t_yc=c$calest 
-t_ypi 
-t_ygreg 
-t_yc 
-
-#total de la variable de inter´es desconocido en la pr´actica 
-#sum(RMT85)
 
 ```
